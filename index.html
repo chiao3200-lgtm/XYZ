@@ -8,151 +8,168 @@
         :root {
             --neon-cyan: #00f3ff;
             --neon-pink: #ff00ff;
-            --bg-dark: #0a0a0c;
-            --book-width: 260px;
-            --book-height: 360px;
+            --book-orange: #ff7b00;
+            --book-orange-dark: #cc5500;
+            --bg-dynamic: #000;
+            --text-dynamic: #fff;
+            --book-w: clamp(260px, 85vw, 320px);
+            --book-h: calc(var(--book-w) * 1.42);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body, html {
-            width: 100%; height: 100%;
-            font-family: 'Orbitron', 'Noto Sans TC', sans-serif;
-            background-color: var(--bg-dark);
-            color: #fff; overflow: hidden;
+        
+        body, html { 
+            width: 100%; height: 100%; 
+            font-family: 'Orbitron', 'Noto Sans TC', sans-serif; 
+            background-color: var(--bg-dynamic); color: var(--text-dynamic);
+            overflow: hidden; touch-action: manipulation;
         }
 
         /* --- 背景層 --- */
-        #bg-canvas { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            z-index: 1; pointer-events: none; 
-        }
-        .star { 
-            position: absolute; background: #fff; border-radius: 50%; 
-            animation: twinkle var(--d) infinite ease-in-out; 
-        }
+        #bg-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0; transition: opacity 1.5s ease; }
+        .star { position: absolute; background: #fff; border-radius: 50%; animation: twinkle var(--d) infinite; }
         .cloud { 
-            position: absolute; background: rgba(255,255,255,0.5); 
-            filter: blur(40px); border-radius: 50%; 
-            animation: drift var(--d) linear infinite; 
+            position: absolute; 
+            background: linear-gradient(to bottom, rgba(70,70,80,0.5), rgba(120,120,130,0.2)); 
+            filter: blur(35px); border-radius: 50%; 
         }
-        @keyframes twinkle { 0%, 100% { opacity: 0.2; transform: scale(1); } 50% { opacity: 1; transform: scale(1.2); } }
-        @keyframes drift { from { transform: translateX(-350px); } to { transform: translateX(calc(100vw + 350px)); } }
+        @keyframes twinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
 
-        /* --- 第一階段：進場（打字機與干擾） --- */
-        #intro-layer {
-            position: fixed; inset: 0; z-index: 100;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            background: rgba(0,0,0,0.9); backdrop-filter: blur(10px);
-            transition: opacity 1s;
+        /* --- 1. 進場層 --- */
+        #intro-layer { 
+            position: fixed; inset: 0; z-index: 100; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center; 
+            background: transparent; transition: opacity 0.8s; 
         }
-
-        /* 電磁干擾掃描線 */
-        .glitch-overlay {
-            position: absolute; inset: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-            background-size: 100% 3px, 2px 100%;
-            pointer-events: none; z-index: 101;
-        }
-
-        .slogan {
-            font-size: clamp(1.4rem, 6vw, 2.2rem);
-            letter-spacing: 0.3rem; text-align: center;
-            color: var(--neon-cyan);
-            text-shadow: 0 0 10px var(--neon-cyan);
-            z-index: 102;
-            position: relative;
-        }
-
-        .cursor {
-            display: inline-block; width: 12px; height: 1.2em;
-            background: var(--neon-cyan); margin-left: 8px;
-            animation: blink 0.7s infinite; vertical-align: middle;
-        }
+        .slogan { font-size: clamp(1.1rem, 5vw, 1.8rem); letter-spacing: 0.3rem; text-align: center; padding: 0 20px; color: inherit; font-weight: bold; position: relative; z-index: 101; }
+        .cursor { display: inline-block; width: 8px; height: 1.2em; background: currentColor; margin-left: 5px; animation: blink 0.7s infinite; vertical-align: middle; }
         @keyframes blink { 50% { opacity: 0; } }
-
-        .enter-btn {
-            display: none; margin-top: 50px;
-            padding: 15px 40px; font-size: 1rem;
-            background: transparent; color: #fff;
-            border: 2px solid var(--neon-cyan); cursor: pointer;
-            text-transform: uppercase; letter-spacing: 4px;
-            box-shadow: 0 0 15px var(--neon-cyan);
-            z-index: 103; transition: 0.3s;
-            animation: fadeIn 0.8s forwards;
-        }
-        .enter-btn:hover { background: var(--neon-cyan); color: #000; box-shadow: 0 0 40px var(--neon-cyan); }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* --- 第二階段：遊戲面板 --- */
-        #radio-screen { 
-            display: none; width: 100%; height: 100%; 
-            justify-content: center; align-items: center; z-index: 10;
-        }
-        .cyber-panel { 
-            width: 90%; max-width: 450px; background: rgba(15, 15, 20, 0.95); 
-            border: 1px solid #333; padding: 20px; position: relative; 
-            border-top: 4px solid var(--neon-cyan);
-        }
-        .freq-display { background: #000; padding: 10px; margin-bottom: 15px; text-align: center; border: 1px solid #222; }
-        #freq-num { font-size: 3rem; font-weight: bold; color: var(--neon-cyan); font-family: monospace; }
         
-        .viewport { 
-            width: 100%; aspect-ratio: 4/3; background: #000; 
-            position: relative; overflow: hidden; border: 1px solid #444; 
+        .enter-btn { 
+            display: none; margin-top: 50px; padding: 15px 45px; 
+            background: transparent; color: inherit; border: 2px solid var(--book-orange); 
+            cursor: pointer; letter-spacing: 4px; transition: 0.3s; 
+            box-shadow: 0 0 15px var(--book-orange); font-family: 'Orbitron';
         }
-        #main-img { 
-            width: 100%; height: 100%; object-fit: cover; opacity: 0; 
-            filter: blur(20px); transition: filter 0.1s; background: #111; 
+        .enter-btn:hover { background: var(--book-orange); color: #000; box-shadow: 0 0 30px var(--book-orange); }
+
+        /* --- 規則說明視窗優化 --- */
+        #rule-modal {
+            display: none; position: fixed; inset: 0; z-index: 150;
+            background: rgba(0,0,0,0.9); justify-content: center; align-items: center;
+            padding: 20px; opacity: 0; transition: opacity 0.5s;
         }
-        .noise { 
-            position: absolute; inset: 0; background: url('https://media.giphy.com/media/oEI9uWUPr9WUM/giphy.gif'); 
-            opacity: 0.1; pointer-events: none; z-index: 5; mix-blend-mode: screen;
+        .rule-content {
+            max-width: 480px; width: 100%; background: #0f0f12; border: 1px solid var(--book-orange);
+            padding: clamp(30px, 8vw, 45px); position: relative; box-shadow: 0 0 50px rgba(0,0,0,1);
+        }
+        .rule-content::before { content: "SYSTEM LOG: 0401"; position: absolute; top: -12px; left: 20px; background: var(--book-orange); color: #000; padding: 2px 12px; font-size: 0.7rem; font-weight: bold; letter-spacing: 1px; }
+        .rule-title { color: var(--book-orange); margin-bottom: 25px; font-size: 1.2rem; letter-spacing: 2px; font-weight: bold; }
+        .rule-text { color: #ccc; font-size: 0.95rem; line-height: 1.8; margin-bottom: 35px; text-align: justify; }
+        .rule-list { list-style: none; margin-top: 15px; border-top: 1px solid #333; padding-top: 15px; }
+        .rule-list li { margin-bottom: 10px; color: #eee; position: relative; padding-left: 20px; }
+        .rule-list li::before { content: "•"; position: absolute; left: 0; color: var(--book-orange); }
+        .rule-list b { color: var(--book-orange); }
+
+        /* --- 2. 精緻收音機遊戲介面 --- */
+        #radio-screen { display: none; width: 100%; height: 100%; justify-content: center; align-items: center; z-index: 200; padding: 20px; background: #050507; color: #fff; }
+        
+        .cyber-chassis { 
+            width: 100%; max-width: 460px; background: #1a1a22; 
+            border: 1px solid #333; padding: 25px; 
+            position: relative;
+            clip-path: polygon(0 5%, 5% 0, 95% 0, 100% 5%, 100% 95%, 95% 100%, 5% 100%, 0 95%);
+            border-top: 4px solid var(--book-orange);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.9);
         }
 
-        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .nav-btn { 
-            padding: 12px; background: #111; border: 1px solid var(--neon-cyan); 
-            color: var(--neon-cyan); cursor: pointer; font-weight: bold;
-        }
-        .nav-btn:active { background: var(--neon-cyan); color: #000; }
+        .chassis-deco { position: absolute; font-size: 0.6rem; color: #444; font-family: monospace; }
+        .deco-tl { top: 12px; left: 25px; }
+        .deco-tr { top: 12px; right: 25px; }
+        .deco-bl { bottom: 12px; left: 25px; color: var(--book-orange); }
 
-        .slots { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; margin-top: 15px; }
-        .slot { aspect-ratio: 1; border: 1px solid #222; background: #0a0a0a; position: relative; overflow: hidden; }
-        .slot.active { border-color: var(--neon-cyan); box-shadow: 0 0 10px var(--neon-cyan); }
+        .freq-display-area { 
+            background: #000; border: 2px inset #222; padding: 15px; margin-bottom: 20px; 
+            text-align: center; border-radius: 4px; position: relative;
+        }
+        .freq-display-area::before { content: "FREQUENCY MHZ"; position: absolute; top: 5px; left: 10px; font-size: 0.5rem; color: #333; }
+        
+        #freq-num { font-size: clamp(2.5rem, 12vw, 3.5rem); color: var(--book-orange); text-shadow: 0 0 20px var(--book-orange); font-family: monospace; }
+        .jitter { animation: jitter 0.1s infinite; }
+        @keyframes jitter { 0% { transform: translate(0,0); } 50% { transform: translate(1px,-1px); } 100% { transform: translate(0,0); } }
+
+        .viewport { width: 100%; aspect-ratio: 4/3; background: #000; border: 4px solid #111; position: relative; overflow: hidden; }
+        #main-img { width: 100%; height: 100%; object-fit: cover; opacity: 0; filter: blur(30px); transition: 0.3s; }
+
+        /* 精緻拉桿樣式 */
+        .slider-wrap { margin: 40px 0 20px; width: 100%; position: relative; }
+        .slider-rail { position: absolute; top: 11px; width: 100%; height: 6px; background: #000; border: 1px solid #333; border-radius: 3px; }
+        .ticks { 
+            position: absolute; top: 22px; width: 100%; height: 12px; 
+            background: repeating-linear-gradient(90deg, #444 0, #444 1px, transparent 1px, transparent 10%); 
+            pointer-events: none; opacity: 0.6;
+        }
+        #radio-slider {
+            -webkit-appearance: none; width: 100%; height: 26px;
+            background: transparent; outline: none; position: relative; z-index: 5;
+        }
+        #radio-slider::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none; width: 22px; height: 38px;
+            background: linear-gradient(to bottom, var(--book-orange), var(--book-orange-dark));
+            border: 2px solid #fff; cursor: pointer; border-radius: 2px;
+            box-shadow: 0 0 15px rgba(255,123,0,0.6), inset 0 0 5px rgba(0,0,0,0.3);
+        }
+
+        .slots { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-top: 25px; }
+        .slot { aspect-ratio: 1; border: 1px solid #333; background: #08080a; overflow: hidden; border-radius: 2px; }
+        .slot.active { border-color: var(--neon-cyan); box-shadow: 0 0 12px var(--neon-cyan); }
         .slot img { width: 100%; height: 100%; object-fit: cover; }
 
-        #lock-notice { 
-            position: absolute; inset: 0; display: none; justify-content: center; align-items: center; 
-            background: rgba(0, 243, 255, 0.2); z-index: 20; font-weight: bold; font-size: 1.2rem;
+        /* --- 3. 結局過場文字 --- */
+        #end-transition { 
+            display: none; position: fixed; inset: 0; z-index: 2000; background: #000; 
+            flex-direction: column; justify-content: center; align-items: center; text-align: center; 
         }
-
-        /* --- 第三階段：翻頁書 --- */
-        #final-reveal { 
-            display: none; position: fixed; inset: 0; z-index: 2000; 
-            background: #000; flex-direction: column; justify-content: center; 
-            align-items: center; opacity: 0; transition: 1s; padding: 20px;
+        .end-slogan { 
+            font-size: clamp(1.2rem, 6vw, 2.2rem); color: var(--book-orange); 
+            text-shadow: 0 0 25px var(--book-orange), 0 0 10px #fff; 
+            font-weight: bold; letter-spacing: 4px; line-height: 1.8;
         }
-        .book-wrapper { perspective: 1200px; width: var(--book-width); height: var(--book-height); margin-bottom: 30px; }
-        .book { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: 0.6s; cursor: pointer; }
-        .page { 
-            position: absolute; inset: 0; transform-origin: left; transition: 0.8s; 
-            backface-visibility: hidden; display: flex; flex-direction: column; 
-            justify-content: center; align-items: center; padding: 20px; border: 1px solid #333;
-        }
-        .front { background: linear-gradient(45deg, #050505, #1a1a1a); z-index: 2; border-left: 4px solid var(--neon-cyan); }
-        .back { background: #fff; color: #000; transform: rotateY(0deg); z-index: 1; }
-        .last { background: #000; color: var(--neon-pink); border: 2px solid var(--neon-pink); text-align: center; }
         
-        .book.flipped .front { transform: rotateY(-160deg); }
-        .book.flipped .back { z-index: 3; }
+        #final-reveal { 
+            display: none; position: fixed; inset: 0; z-index: 2100; 
+            background: #050507; flex-direction: column; justify-content: center; 
+            align-items: center; opacity: 0; transition: 1.2s; padding: 20px;
+        }
 
-        .book-info { text-align: center; max-width: 400px; }
-        .book-info h2 { color: var(--neon-cyan); margin-bottom: 10px; }
-        .book-info p { font-size: 0.9rem; color: #aaa; margin-bottom: 5px; }
+        /* 3D 書籍系統 */
+        .book { position: relative; width: var(--book-w); height: var(--book-h); perspective: 2500px; transform-style: preserve-3d; }
+        .page { position: absolute; width: 100%; height: 100%; top: 0; left: 0; transform-style: preserve-3d; transform-origin: left center; transition: transform 0.9s cubic-bezier(0.645, 0.045, 0.355, 1); }
+        .page-side { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; padding: clamp(25px, 6vw, 35px); border: 1px solid #333; box-shadow: inset 0 0 60px rgba(0,0,0,0.5); top: 0; left: 0; }
+        .page-front { background: #fff; color: #000; z-index: 2; cursor: pointer; } 
+        .page-back { background: #fdfdfd; color: #000; transform: rotateY(-180deg); z-index: 1; cursor: pointer; } 
+        .page.flipped { transform: rotateY(-180deg); }
 
-        .fly-img { position: fixed; z-index: 999; object-fit: cover; transition: 0.7s cubic-bezier(0.6, -0.28, 0.735, 0.045); }
+        .cover-front { background: linear-gradient(135deg, var(--book-orange-dark), var(--book-orange)) !important; color: #fff !important; border-left: 6px solid #441100; justify-content: center; overflow: hidden; }
+        .cover-front::after { content: ""; position: absolute; inset: 0; background: url('https://www.transparenttextures.com/patterns/stardust.png'); opacity: 0.3; pointer-events: none; mix-blend-mode: overlay; }
+        .book-title { font-size: clamp(1.4rem, 6vw, 2.1rem); color: #fff; text-align: center; text-shadow: 2px 2px 5px rgba(0,0,0,0.6); font-weight: bold; line-height: 1.4; z-index: 2; }
+
+        .author-layout { display: flex; flex-direction: column; align-items: center; height: 100%; width: 100%; justify-content: center; text-align: center; }
+        .author-img-box { width: 100%; height: 50%; background: #000; border: 1px solid #ccc; overflow: hidden; margin-bottom: 20px; }
+        .author-img-box img { width: 100%; height: 100%; object-fit: cover; }
+        .author-name-box { font-weight: bold; font-size: 1.2rem; border-top: 2.5px solid #000; padding-top: 15px; width: 85%; }
+
+        .last-page-style { background: var(--book-orange-dark) !important; color: #fff !important; border: 2px solid #fff; text-align: center; justify-content: center; align-items: center; }
+        .publish-date-tag { font-family: 'Orbitron'; font-size: 0.9rem; color: #fff; background: #000; padding: 10px 20px; border: 1px solid #fff; letter-spacing: 2px; margin-bottom: 30px; font-weight: bold; box-shadow: 0 0 20px rgba(255,255,255,0.2); }
+        .final-msg { line-height: 1.8; letter-spacing: 1.5px; font-size: 1.1rem; font-weight: bold; margin-bottom: 30px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+
+        .buy-btn { padding: 14px 30px; background: #fff; color: var(--book-orange-dark); border: none; cursor: pointer; font-family: Orbitron; font-weight: bold; transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        .buy-btn:hover { background: #000; color: #fff; }
+        
+        #fool-modal { display: none; position: fixed; inset: 0; z-index: 3000; background: rgba(0,0,0,0.96); justify-content: center; align-items: center; }
+        .fool-content { background: #111; border: 2px solid var(--book-orange); padding: 50px; text-align: center; color: var(--book-orange); font-size: 1.8rem; box-shadow: 0 0 60px var(--book-orange); font-weight: bold; }
+
+        .fly-img { position: fixed; z-index: 999; object-fit: cover; transition: 0.8s; box-shadow: 0 0 25px var(--neon-cyan); }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Noto+Sans+TC:wght@300;700&display=swap" rel="stylesheet">
 </head>
@@ -160,163 +177,245 @@
 
     <div id="bg-canvas"></div>
 
-    <!-- 1. 打字機開場層 -->
+    <!-- 1. 進場打字機 -->
     <div id="intro-layer">
-        <div class="glitch-overlay"></div>
         <div class="slogan"><span id="type-text"></span><span id="cursor" class="cursor"></span></div>
-        <button id="start-btn" class="enter-btn" onclick="startGame()">INITIALIZE SYSTEM</button>
+        <button id="start-btn" class="enter-btn" onclick="showRules()">INITIALIZE SYSTEM</button>
     </div>
 
-    <!-- 2. 收音機面板 -->
+    <!-- 優化後的規則說明視窗 -->
+    <div id="rule-modal">
+        <div class="rule-content">
+            <h2 class="rule-title">維度通訊玩具：已啟動</h2>
+            <p class="rule-text">
+                你在整理房間深處的舊紙箱時，翻出了一個造型奇特的收音玩具。<br><br>
+                雖然外殼佈滿灰塵，但撥動開關後，指示盤跳動起跨維度的頻率...似乎有什麼人正試圖透過雜訊傳遞影像。
+                <ul class="rule-list">
+                    <li>拖動<b>調頻拉桿</b>，在 88.0 - 108.0 之間尋找波長。</li>
+                    <li>接近目標時訊號會產生<b>視覺震動</b>。</li>
+                    <li>完全鎖定（SIGNAL LOCKED）後，即可攔截「同頻者」的影像。</li>
+                </ul>
+            </p>
+            <button class="enter-btn" style="display:block; width:100%; border-color: #fff; background: var(--book-orange); color:#000; font-weight:bold;" onclick="startGame()">開始同步訊號</button>
+        </div>
+    </div>
+
+    <!-- 2. 收音機遊戲介面 -->
     <div id="radio-screen">
-        <div class="cyber-panel">
-            <div class="freq-display"><div id="freq-num">088.0</div></div>
+        <div class="cyber-chassis">
+            <div class="chassis-deco deco-tl">TOY_MODE: ACTIVE</div>
+            <div class="chassis-deco deco-tr">UID: 0401-RESTORE</div>
+            <div class="freq-display-area"><span id="freq-num">---.-</span></div>
             <div class="viewport" id="viewport">
-                <div class="noise"></div>
                 <img src="" id="main-img">
-                <div id="lock-notice">SIGNAL LOCKED</div>
+                <div id="lock-msg" style="position:absolute; inset:0; display:none; justify-content:center; align-items:center; background:rgba(255,123,0,0.2); font-weight:bold; z-index:20; letter-spacing:3px;">SIGNAL LOCKED</div>
             </div>
-            <div class="controls">
-                <button class="nav-btn" onmousedown="startScan(-1)" onmouseup="stopScan()" ontouchstart="startScan(-1)" ontouchend="stopScan()">◀ DOWN</button>
-                <button class="nav-btn" onmousedown="startScan(1)" onmouseup="stopScan()" ontouchstart="startScan(1)" ontouchend="stopScan()">UP ▶</button>
+            <div class="slider-wrap">
+                <div class="slider-rail"></div>
+                <div class="ticks"></div>
+                <input type="range" id="radio-slider" min="88.0" max="108.0" step="0.1" value="88.0">
             </div>
-            <div class="slots" id="slots-grid">
+            <div class="slots">
                 <div class="slot" id="slot-0"></div><div class="slot" id="slot-1"></div><div class="slot" id="slot-2"></div>
                 <div class="slot" id="slot-3"></div><div class="slot" id="slot-4"></div><div class="slot" id="slot-5"></div>
             </div>
+            <div class="chassis-deco deco-bl" id="progress-text">MEMORY_RESTORE: 0%</div>
         </div>
     </div>
 
-    <!-- 3. 翻頁書結局 -->
+    <!-- 3. 結局序列 -->
+    <div id="end-transition">
+        <div class="end-slogan" id="end-type-text"></div>
+    </div>
+
     <div id="final-reveal">
-        <div class="book-wrapper">
-            <div class="book" id="book" onclick="this.classList.toggle('flipped')">
-                <div class="page front">
-                    <h2 style="color:var(--neon-cyan)">晝夜同頻</h2>
-                    <p style="margin-top:20px; font-size:0.8rem; color:#666;">點擊翻閱</p>
-                </div>
-                <div class="page back">
-                    <h3 style="margin-bottom:10px;">序章</h3>
-                    <p style="font-size:0.8rem; line-height:1.5;">攔截成功的數據殘片。這本記錄了關於維度與頻率的詩篇...</p>
-                    <p style="margin-top:20px; font-size:0.7rem; color:var(--neon-pink);">(再次點擊查看封底)</p>
-                </div>
-                <div class="page last" style="transform: rotateY(-180deg); backface-visibility: visible; z-index:0;">
-                    <p style="padding:20px; line-height:1.8;">訊號連接成功，<br>但這...真的會是<br>愚人節玩笑嗎？</p>
-                </div>
-            </div>
-        </div>
-        <div class="book-info">
-            <h2>晝夜同頻</h2>
-            <p>尺寸: A5 / 頁數: 約 70P / 裝訂: 軟精裝</p>
-            <button class="enter-btn" style="display:inline-block; margin-top:20px;" onclick="location.reload()">RESCAN</button>
+        <div class="book" id="book-container">
+            <div class="page" id="p0" style="z-index:20"><div class="page-side page-front cover-front" onclick="nextPage(0)"><h1 class="book-title">晝夜同頻企劃</h1><p style="margin-top:50px; color:rgba(255,255,255,0.4); font-size:0.6rem; font-family:Orbitron; letter-spacing:2px;">// DATA RECOVERY SUCCESS //</p></div><div class="page-side page-back" onclick="prevPage(0)"></div></div>
+            <div class="page" id="p1" style="z-index:19"><div class="page-side page-front" onclick="nextPage(1)"><div class="author-layout"><h2 style="border-bottom:2px solid #000; padding-bottom:12px; margin-bottom:15px; font-size:1.8rem;">《晝夜同頻》</h2><p style="font-weight:bold; letter-spacing:4px; font-size:1.1rem;">哥妹R18合本</p></div></div><div class="page-side page-back" onclick="prevPage(1)"></div></div>
+            <div class="page" id="p2" style="z-index:18"><div class="page-side page-front" onclick="nextPage(2)"><div style="margin:auto; text-align:left; width:85%;"><p style="font-weight:bold; border-left:4px solid #000; padding-left:12px; font-size:1.1rem;">漫畫作者：</p><p style="line-height:2; margin: 15px 0 25px; font-size:1rem; color:#333;">Eros艾諾斯 / 子葉 / 陌那<br>飯粒 / 蒼斐</p><p style="font-weight:bold; border-left:4px solid #000; padding-left:12px; font-size:1.1rem;">封面繪者：</p><p style="margin-top:15px; font-size:1rem; color:#333;">31棵棕櫚樹</p></div></div><div class="page-side page-back" onclick="prevPage(2)"></div></div>
+            <div id="dynamic-pages"></div>
+            <div class="page" id="pLast" style="z-index:11"><div class="page-side page-front last-page-style"><div class="publish-date-tag">出版日期：2066/4/01</div><p class="final-msg">訊號連接成功，<br>但這日期...難不成...</p><button class="buy-btn" onclick="document.getElementById('fool-modal').style.display='flex'">預購連結</button></div><div class="page-side page-back" onclick="prevPage('Last')"></div></div>
         </div>
     </div>
+
+    <div id="fool-modal" onclick="this.style.display='none'"><div class="fool-content">愚人節快樂！</div></div>
 
     <script>
-        // --- 初始化變數 ---
-        const typeTarget = document.getElementById('type-text');
-        const startBtn = document.getElementById('start-btn');
-        const cursor = document.getElementById('cursor');
-        const bgCanvas = document.getElementById('bg-canvas');
+        const authorConfig = [
+            { name: "Eros艾諾斯", img: "img/author4.png", fixed: false },
+            { name: "子葉", img: "img/author3.jpg", fixed: false },
+            { name: "陌那", img: "img/author6.png", fixed: false },
+            { name: "飯粒", img: "img/author2.png", fixed: false },
+            { name: "蒼斐", img: "img/author1.png", fixed: false },
+            { name: "31棵棕櫚樹", img: "img/author5.jpg", fixed: 1031 }
+        ];
 
-        // --- 1. 背景與打字機啟動 ---
-        document.addEventListener('DOMContentLoaded', () => {
-            initBackground();
-            startSequence();
-        });
+        let targets = [];
+        const imgs = authorConfig.map(a => a.img);
+        let found = new Set(), freq, scanTimer, locked = false;
+        const zMap = { '0': 20, '1': 19, '2': 18, 'Auth0': 17, 'Auth1': 16, 'Auth2': 15, 'Auth3': 14, 'Auth4': 13, 'Auth5': 12, 'Last': 11 };
 
-        function initBackground() {
-            const isDay = new Date().getHours() >= 6 && new Date().getHours() < 18;
-            if(isDay) {
-                document.body.style.backgroundColor = "#000";
-                for(let i=0; i<60; i++) createStar();
-            } else {
-                document.body.style.backgroundColor = "#eee";
-                bgCanvas.style.filter = "invert(1)";
-                for(let i=0; i<8; i++) createCloud();
-            }
-        }
+        // --- 1. 背景與首頁打字機 (背景先行) ---
+        (function init() {
+            const h = new Date().getHours();
+            const isDay = h >= 6 && h < 18;
+            document.documentElement.style.setProperty('--bg-dynamic', isDay ? '#000' : '#fff');
+            document.documentElement.style.setProperty('--text-dynamic', isDay ? '#fff' : '#000');
 
-        function createStar() {
-            const s = document.createElement('div'); s.className = 'star';
-            s.style.left = Math.random()*100+'vw'; s.style.top = Math.random()*100+'vh';
-            const size = Math.random()*3+'px'; s.style.width = s.style.height = size;
-            s.style.setProperty('--d', Math.random()*3+2+'s');
-            bgCanvas.appendChild(s);
-        }
-
-        function createCloud() {
-            const c = document.createElement('div'); c.className = 'cloud';
-            c.style.width = Math.random()*200+100+'px'; c.style.height = '80px';
-            c.style.top = Math.random()*100+'vh'; c.style.left = '-300px';
-            c.style.setProperty('--d', Math.random()*15+10+'s');
-            bgCanvas.appendChild(c);
-        }
-
-        function startSequence() {
-            let text = "同頻訊號攔截…";
-            let i = 0;
-            const timer = setInterval(() => {
-                typeTarget.innerHTML += text[i];
-                i++;
-                if(i >= text.length) {
-                    clearInterval(timer);
-                    setTimeout(() => {
-                        typeTarget.innerHTML = "訊號已攔截成功。";
-                        cursor.style.display = "none";
-                        startBtn.style.display = "block";
-                    }, 1000);
+            window.addEventListener('DOMContentLoaded', () => {
+                const canvas = document.getElementById('bg-canvas');
+                for(let i=0; i<50; i++) {
+                    const el = document.createElement('div');
+                    el.className = isDay ? 'star' : 'cloud';
+                    let x, y;
+                    do { x = Math.random() * 92; } while (x > 30 && x < 62);
+                    do { y = Math.random() * 92; } while (y > 35 && y < 65);
+                    el.style.left = x + 'vw'; el.style.top = y + 'vh';
+                    if(isDay) {
+                        const s = Math.random()*3+'px'; el.style.width = el.style.height = s;
+                        el.style.setProperty('--d', Math.random()*3+2+'s');
+                    } else {
+                        el.style.width = Math.random()*220+140+'px'; el.style.height = '120px';
+                    }
+                    canvas.appendChild(el);
                 }
-            }, 150);
-        }
+                setTimeout(() => { canvas.style.opacity = "1"; }, 100);
+                setTimeout(() => {
+                    startTypewriter("type-text", "同頻訊號攔截…", () => {
+                        setTimeout(() => {
+                            document.getElementById('type-text').innerHTML = "訊號已攔截成功。";
+                            document.getElementById('cursor').style.display = "none";
+                            document.getElementById('start-btn').style.display = "block";
+                        }, 1000);
+                    });
+                }, 800);
+                generateFrequencies();
+                setupDynamicPages();
+            });
+        })();
 
-        // --- 2. 遊戲邏輯 ---
-        let freq = 880;
-        let scanTimer;
-        let locked = false;
-        const targets = [895, 920, 954, 1001, 1031, 1077];
-        const imgs = ["img/author1.png", "img/author2.png", "img/author3.jpg", "img/author4.png", "img/author5.jpg", "img/author6.png"];
-        const found = new Set();
-
-        function startGame() {
+        function showRules() {
             document.getElementById('intro-layer').style.opacity = '0';
             setTimeout(() => {
                 document.getElementById('intro-layer').style.display = 'none';
+                const modal = document.getElementById('rule-modal');
+                modal.style.display = 'flex';
+                setTimeout(() => modal.style.opacity = '1', 50);
+            }, 800);
+        }
+
+        function startGame() {
+            document.getElementById('rule-modal').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('rule-modal').style.display = 'none';
                 document.getElementById('radio-screen').style.display = 'flex';
-                document.body.style.backgroundColor = "#0a0a0c";
-                bgCanvas.style.filter = "none";
-            }, 1000);
+                document.body.style.backgroundColor = "#050507";
+                document.getElementById('bg-canvas').style.display = "none"; 
+                freq = (Math.random() * (108 - 88) + 88).toFixed(1);
+                document.getElementById('radio-slider').value = freq;
+                updateUI(freq);
+            }, 800);
         }
 
-        function startScan(dir) {
-            if(locked) return;
-            scanTimer = setInterval(() => {
-                freq += dir;
-                if(freq > 1080) freq = 880;
-                if(freq < 880) freq = 1080;
-                updateUI();
-            }, 80);
-        }
-        function stopScan() { clearInterval(scanTimer); }
+        document.getElementById('radio-slider').addEventListener('input', (e) => {
+            if(!locked) updateUI(e.target.value);
+        });
 
-        function updateUI() {
-            document.getElementById('freq-num').innerText = (freq/10).toFixed(1).padStart(5, '0');
+        function updateUI(val) {
+            const fNum = parseFloat(val);
+            const display = document.getElementById('freq-num');
+            display.innerText = fNum.toFixed(1).padStart(5, '0');
             let minDist = 1000, idx = -1;
-            targets.forEach((t, i) => {
-                let d = Math.abs(freq - t);
-                if(d < minDist) { minDist = d; idx = i; }
-            });
-
-            const mainImg = document.getElementById('main-img');
-            if(minDist < 25) {
-                mainImg.src = imgs[idx];
-                mainImg.style.opacity = (1 - minDist/25);
-                mainImg.style.filter = `blur(${minDist * 2}px)`;
+            targets.forEach((t, i) => { let d = Math.abs(fNum * 10 - t); if(d < minDist) { minDist = d; idx = i; } });
+            if (minDist < 4) display.classList.add('jitter'); else display.classList.remove('jitter');
+            const img = document.getElementById('main-img');
+            if(minDist < 12) {
+                img.src = imgs[idx]; img.style.opacity = (1 - minDist/12);
+                img.style.filter = `blur(${minDist * 2}px) contrast(120%)`;
                 if(minDist === 0 && !found.has(idx)) capture(idx);
-            } else {
-                mainImg.style.opacity = "0.05"; mainImg.style.filter = "blur(30px)";
-            }
+            } else { img.style.opacity = "0.05"; img.style.filter = "blur(40px)"; }
         }
 
         function capture(idx) {
-            locked = true; stopScan(); found.add(id
+            locked = true; found.add(idx);
+            const mainImg = document.getElementById('main-img');
+            mainImg.style.filter = "blur(0px)"; mainImg.style.opacity = "1";
+            document.getElementById('lock-msg').style.display = "flex";
+            
+            // 更新 MEMORY_RESTORE 進度
+            const progress = Math.round((found.size / 6) * 100);
+            document.getElementById('progress-text').innerText = `MEMORY_RESTORE: ${progress}%`;
+
+            setTimeout(() => {
+                document.getElementById('lock-msg').style.display = "none";
+                const v = document.getElementById('viewport').getBoundingClientRect();
+                const s = document.getElementById(`slot-${idx}`).getBoundingClientRect();
+                const fly = document.createElement('img');
+                fly.src = imgs[idx]; fly.className = 'fly-img';
+                fly.style.cssText = `width:${v.width}px; height:${v.height}px; top:${v.top}px; left:${v.left}px; position:fixed; z-index:999; transition: 0.8s;`;
+                document.body.appendChild(fly);
+                setTimeout(() => {
+                    fly.style.width = s.width+'px'; fly.style.height = s.height+'px';
+                    fly.style.top = s.top+'px'; fly.style.left = s.left+'px'; fly.style.opacity = '0.5';
+                    setTimeout(() => {
+                        document.getElementById(`slot-${idx}`).classList.add('active');
+                        document.getElementById(`slot-${idx}`).innerHTML = `<img src="${imgs[idx]}" style="width:100%;height:100%;object-fit:cover;">`;
+                        fly.remove(); locked = false;
+                        if(found.size === 6) triggerEnd();
+                    }, 800);
+                }, 50);
+            }, 1500);
+        }
+
+        function triggerEnd() {
+            setTimeout(() => {
+                document.getElementById('radio-screen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('radio-screen').style.display = 'none';
+                    const trans = document.getElementById('end-transition'); trans.style.display = 'flex';
+                    startTypewriter("end-type-text", "您已連接到訊號...\n晝夜同頻企劃即將啟動...", () => {
+                        setTimeout(() => { trans.style.opacity = '0'; setTimeout(() => {
+                                trans.style.display = 'none';
+                                const reveal = document.getElementById('final-reveal');
+                                reveal.style.display = 'flex'; setTimeout(() => reveal.style.opacity = '1', 50);
+                        }, 800); }, 1500);
+                    });
+                }, 800);
+            }, 1000);
+        }
+
+        function setupDynamicPages() {
+            const container = document.getElementById('dynamic-pages');
+            container.innerHTML = "";
+            authorConfig.forEach((auth, i) => {
+                const page = document.createElement('div');
+                page.className = 'page'; page.id = `pAuth${i}`; page.style.zIndex = zMap[`Auth${i}`];
+                page.innerHTML = `<div class="page-side page-front" onclick="nextPage('Auth${i}')"><div class="author-layout"><div class="author-img-box"><img src="${auth.img}"></div><div class="author-name-box">${auth.name}</div></div></div><div class="page-side page-back" onclick="prevPage('Auth${i}')"></div>`;
+                container.appendChild(page);
+            });
+        }
+
+        function generateFrequencies() {
+            targets = new Array(authorConfig.length);
+            authorConfig.forEach((auth, i) => {
+                if (auth.fixed) targets[i] = auth.fixed;
+                else {
+                    let r;
+                    do { r = Math.floor(Math.random() * (1080 - 880 + 1) + 880); } 
+                    while (targets.includes(r) || Math.abs(r - 1031) < 15);
+                    targets[i] = r;
+                }
+            });
+        }
+
+        function startTypewriter(id, text, cb) {
+            let i = 0, el = document.getElementById(id);
+            el.innerHTML = "";
+            const t = setInterval(() => { el.innerHTML += text[i++]; if(i >= text.length) { clearInterval(t); if(cb) cb(); } }, 120);
+        }
+
+        function nextPage(id) { const p = document.getElementById('p'+id); p.classList.add('flipped'); setTimeout(() => { p.style.zIndex = 1; }, 500); }
+        function prevPage(id) { const p = document.getElementById('p'+id); p.style.zIndex = zMap[id]; p.classList.remove('flipped'); }
+    </script>
+</body>
+</html>
