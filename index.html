@@ -23,268 +23,231 @@
             font-family: 'Orbitron', 'Noto Sans TC', sans-serif; 
             background-color: var(--bg-dynamic); color: var(--text-dynamic);
             overflow: hidden; touch-action: manipulation;
+            transition: background-color 0.5s ease, color 0.5s ease;
         }
 
-        /* --- 背景層 --- */
-        #bg-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0; transition: opacity 1.5s ease; }
-        .star { position: absolute; background: #fff; border-radius: 50%; animation: twinkle var(--d) infinite; }
-        .cloud { position: absolute; background: linear-gradient(to bottom, rgba(70,70,80,0.5), rgba(120,120,130,0.2)); filter: blur(35px); border-radius: 50%; }
-        @keyframes twinkle { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+        /* --- 日夜切換按鈕 --- */
+        #theme-toggle {
+            position: fixed; top: 20px; right: 20px; z-index: 1000;
+            background: transparent; border: 1px solid var(--book-orange);
+            color: inherit; padding: 10px 15px; cursor: pointer;
+            font-family: 'Orbitron'; font-size: 0.7rem; letter-spacing: 2px;
+            backdrop-filter: blur(10px); transition: 0.3s;
+        }
+        #theme-toggle:hover { background: var(--book-orange); color: #000; }
 
-        /* --- 1. 進場層 --- */
-        #intro-layer { position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; background: transparent; transition: opacity 0.8s; }
-        .slogan { font-size: clamp(1.1rem, 5vw, 1.8rem); letter-spacing: 0.3rem; text-align: center; padding: 0 20px; color: inherit; font-weight: bold; position: relative; z-index: 101; }
+        /* --- 1. 進場層佈局 --- */
+        #intro-layer { 
+            position: fixed; inset: 0; z-index: 100; 
+            display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; 
+            background: transparent; transition: opacity 0.8s;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* 蘋果圖片樣式：位於文字上方 */
+        #apple-logo {
+            height: 40vh; /* 桌面端高度比例 */
+            width: auto;
+            max-width: 80vw;
+            object-fit: contain;
+            margin-bottom: 30px; /* 與文字的間距 */
+            opacity:1.0;
+            transition: all 0.8s ease;
+            filter: drop-shadow(0 0 20px rgba(255,255,255,0.1));
+        }
+
+        .slogan { 
+            font-size: clamp(1.1rem, 5vw, 1.8rem); 
+            letter-spacing: 0.3rem; 
+            color: inherit; 
+            font-weight: bold; 
+            min-height: 1.5em;
+        }
+
+        /* 行動端比例優化 */
+        @media (max-height: 700px) {
+            #apple-logo {
+                height: 25vh;
+                margin-bottom: 20px;
+            }
+        }
+
+        .enter-btn { 
+            display: none; margin-top: 40px; padding: 18px 50px; 
+            background: var(--book-orange); color: #000; border: none; 
+            cursor: pointer; letter-spacing: 4px; transition: 0.3s; 
+            box-shadow: 0 0 25px var(--book-orange); 
+            font-family: 'Orbitron'; font-weight: 900;
+            text-transform: uppercase;
+        }
+        .enter-btn:hover { background: #fff; color: var(--book-orange); box-shadow: 0 0 40px #fff; transform: scale(1.05); }
+
         .cursor { display: inline-block; width: 8px; height: 1.2em; background: currentColor; margin-left: 5px; animation: blink 0.7s infinite; vertical-align: middle; }
         @keyframes blink { 50% { opacity: 0; } }
-        .enter-btn { display: none; margin-top: 50px; padding: 15px 45px; background: transparent; color: inherit; border: 2px solid var(--book-orange); cursor: pointer; letter-spacing: 4px; transition: 0.3s; box-shadow: 0 0 15px var(--book-orange); font-family: 'Orbitron'; }
-        .enter-btn:hover { background: var(--book-orange); color: #000; box-shadow: 0 0 30px var(--book-orange); }
 
-        /* --- 規則說明 --- */
-        #rule-modal { display: none; position: fixed; inset: 0; z-index: 150; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; padding: 20px; opacity: 0; transition: opacity 0.5s; }
-        .rule-content { max-width: 480px; width: 100%; background: #0f0f12; border: 1px solid var(--book-orange); padding: clamp(30px, 8vw, 45px); position: relative; box-shadow: 0 0 50px rgba(0,0,0,1); }
-        .rule-content::before { content: "SYSTEM LOG: 0401"; position: absolute; top: -12px; left: 20px; background: var(--book-orange); color: #000; padding: 2px 12px; font-size: 0.7rem; font-weight: bold; }
-        .rule-title { color: var(--book-orange); margin-bottom: 25px; font-size: 1.2rem; letter-spacing: 2px; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        .rule-text { color: #ccc; font-size: 0.95rem; line-height: 1.8; margin-bottom: 35px; text-align: justify; }
-        .rule-list { list-style: none; margin-top: 15px; border-top: 1px solid #333; padding-top: 15px; }
-        .rule-list li { margin-bottom: 10px; color: #eee; position: relative; padding-left: 20px; font-size: 0.85rem; }
-        .rule-list li::before { content: "•"; position: absolute; left: 0; color: var(--book-orange); }
-
-        /* --- 2. 收音機遊戲介面 --- */
-        #radio-screen { display: none; width: 100%; height: 100%; justify-content: center; align-items: center; z-index: 200; padding: 20px; background: #050507; color: #fff; }
-        .cyber-chassis { width: 100%; max-width: 460px; background: #1a1a22; border: 1px solid #333; padding: 25px; position: relative; border-top: 4px solid var(--book-orange); box-shadow: 0 30px 60px rgba(0,0,0,0.9); clip-path: polygon(0 5%, 5% 0, 95% 0, 100% 5%, 100% 95%, 95% 100%, 5% 100%, 0 95%); }
-        .freq-display-area { background: #000; border: 2px inset #222; padding: 15px; margin-bottom: 20px; text-align: center; border-radius: 4px; }
-        #freq-num { font-size: clamp(2.5rem, 12vw, 3.5rem); color: var(--book-orange); text-shadow: 0 0 20px var(--book-orange); font-family: monospace; }
-        .jitter { animation: jitter 0.1s infinite; }
-        @keyframes jitter { 0% { transform: translate(0,0); } 50% { transform: translate(1px,-1px); } 100% { transform: translate(0,0); } }
-        .viewport { width: 100%; aspect-ratio: 4/3; background: #000; border: 4px solid #111; position: relative; overflow: hidden; }
-        #main-img { width: 100%; height: 100%; object-fit: cover; opacity: 0; filter: blur(30px); transition: 0.3s; }
-        .slider-wrap { margin: 40px 0 20px; width: 100%; position: relative; }
-        .slider-rail { position: absolute; top: 11px; width: 100%; height: 6px; background: #000; border: 1px solid #333; border-radius: 3px; }
-        .ticks { position: absolute; top: 22px; width: 100%; height: 12px; background: repeating-linear-gradient(90deg, #444 0, #444 1px, transparent 1px, transparent 10%); pointer-events: none; opacity: 0.6; }
-        #radio-slider { -webkit-appearance: none; width: 100%; height: 26px; background: transparent; outline: none; position: relative; z-index: 5; }
-        #radio-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 38px; background: linear-gradient(to bottom, var(--book-orange), var(--book-orange-dark)); border: 2px solid #fff; cursor: pointer; border-radius: 2px; box-shadow: 0 0 15px rgba(255,123,0,0.6), inset 0 0 5px rgba(0,0,0,0.3); }
-        .slots { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-top: 25px; }
-        .slot { aspect-ratio: 1; border: 1px solid #333; background: #08080a; overflow: hidden; border-radius: 2px; }
-        .slot.active { border-color: var(--neon-cyan); box-shadow: 0 0 12px var(--neon-cyan); }
-        .slot img { width: 100%; height: 100%; object-fit: cover; }
-        .deco-bl { position: absolute; bottom: 12px; left: 25px; font-size: 0.6rem; color: var(--book-orange); font-family: monospace; }
-
-        /* --- 3. 書籍系統 --- */
-        #final-reveal { display: none; position: fixed; inset: 0; z-index: 500; background: #050507; flex-direction: column; justify-content: center; align-items: center; opacity: 0; transition: 1.2s; padding: 20px; }
-        .book { position: relative; width: var(--book-w); height: var(--book-h); perspective: 2500px; transform-style: preserve-3d; }
-        .page { position: absolute; width: 100%; height: 100%; top: 0; left: 0; transform-style: preserve-3d; transform-origin: left center; transition: transform 0.9s cubic-bezier(0.645, 0.045, 0.355, 1); }
-        .page-side { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; padding: clamp(25px, 6vw, 35px); border: 1px solid #333; box-shadow: inset 0 0 60px rgba(0,0,0,0.5); top: 0; left: 0; }
-        .page-front { background: #fff; color: #000; z-index: 2; cursor: pointer; } 
-        .page-back { background: #fdfdfd; color: #000; transform: rotateY(-180deg); z-index: 1; cursor: pointer; } 
+        /* --- 遊戲與書籍介面 (維持原邏輯) --- */
+        #rule-modal { display: none; position: fixed; inset: 0; z-index: 150; background: rgba(0,0,0,0.95); justify-content: center; align-items: center; padding: 20px; }
+        .rule-content { max-width: 480px; width: 100%; background: #0f0f12; border: 1px solid var(--book-orange); padding: 40px; }
+        
+        #radio-screen { display: none; width: 100%; height: 100%; justify-content: center; align-items: center; z-index: 200; background: #050507; color: #fff; }
+        .cyber-chassis { width: 100%; max-width: 440px; background: #1a1a22; border: 1px solid #333; padding: 20px; border-top: 4px solid var(--book-orange); }
+        
+        #final-reveal { display: none; position: fixed; inset: 0; z-index: 500; background: #050507; flex-direction: column; justify-content: center; align-items: center; padding: 20px; transition: 1s; }
+        .book { position: relative; width: var(--book-w); height: var(--book-h); perspective: 2500px; }
+        .page { position: absolute; width: 100%; height: 100%; transform-origin: left center; transition: 0.9s; transform-style: preserve-3d; }
+        .page-side { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; padding: 30px; border: 1px solid #333; }
+        .page-front { background: #fff; color: #000; z-index: 2; }
+        .page-back { background: #fdfdfd; transform: rotateY(-180deg); }
         .page.flipped { transform: rotateY(-180deg); }
-        .cover-front { background: linear-gradient(135deg, var(--book-orange-dark), var(--book-orange)) !important; color: #fff !important; border-left: 6px solid #441100; justify-content: center; overflow: hidden; }
-        .cover-front::after { content: ""; position: absolute; inset: 0; background: url('https://www.transparenttextures.com/patterns/stardust.png'); opacity: 0.3; pointer-events: none; mix-blend-mode: overlay; }
-        .book-title { font-size: clamp(1.4rem, 6vw, 2.1rem); color: #fff; text-align: center; text-shadow: 2px 2px 5px rgba(0,0,0,0.6); font-weight: bold; line-height: 1.4; z-index: 2; }
-        .author-layout { display: flex; flex-direction: column; align-items: center; height: 100%; width: 100%; justify-content: center; text-align: center; }
-        .author-img-box { width: 100%; height: 50%; background: #000; border: 1px solid #ccc; overflow: hidden; margin-bottom: 20px; }
-        .author-img-box img { width: 100%; height: 100%; object-fit: cover; }
-        .author-name-box { font-weight: bold; font-size: 1.2rem; border-top: 2px solid #000; padding-top: 15px; width: 85%; }
-        .last-page-style { background: var(--book-orange-dark) !important; color: #fff !important; border: 2px solid #fff; text-align: center; justify-content: center; align-items: center; }
-        .publish-date-tag { font-family: 'Orbitron'; font-size: 0.9rem; color: #fff; background: #000; padding: 10px 20px; border: 1px solid #fff; letter-spacing: 2px; margin-bottom: 30px; font-weight: bold; }
-        .final-msg { line-height: 1.8; letter-spacing: 1.5px; font-size: 1rem; font-weight: bold; margin-bottom: 30px; }
-        .buy-btn { padding: 14px 30px; background: #fff; color: var(--book-orange-dark); border: none; cursor: pointer; font-family: Orbitron; font-weight: bold; transition: 0.3s; }
-
-        /* --- 4. 二段式結局彈窗 (修正版：直接覆蓋) --- */
-        #fool-modal { display: none; position: fixed; inset: 0; z-index: 3000; background: rgba(0,0,0,0.9); justify-content: center; align-items: center; }
-        .fool-content { background: #111; border: 2px solid var(--book-orange); padding: 50px; text-align: center; color: var(--book-orange); font-size: 1.8rem; box-shadow: 0 0 60px var(--book-orange); font-weight: bold; }
-
-        /* 系統報錯視窗 - z-index 更高 */
-        #error-modal { display: none; position: fixed; inset: 0; z-index: 5000; background: rgba(20,0,0,0.9); justify-content: center; align-items: center; padding: 20px; }
-        .error-content { 
-            max-width: 500px; width: 100%; background: #000; border: 3px solid #ff0000; padding: 40px; 
-            color: #ff0000; box-shadow: 0 0 40px #ff0000; position: relative;
-        }
-        .error-title { font-size: 1.5rem; font-weight: bold; margin-bottom: 20px; border-bottom: 1px solid #ff0000; padding-bottom: 10px; font-family: monospace; }
-        .error-text { font-size: 1rem; line-height: 1.6; color: #ff9999; }
-
-        /* 滿佈畫面的灰色文字 (#FCFCFC) */
-        #glitch-bg { position: fixed; inset: 0; z-index: 4000; pointer-events: none; display: none; overflow: hidden; }
-        .glitch-text-unit { 
-            position: absolute; color: #FCFCFC; 
-            white-space: nowrap; transform-origin: center; font-weight: 900; 
-            text-shadow: 0 0 5px rgba(255,255,255,0.3);
-        }
-
-        /* 其它特效 */
-        #end-transition { display: none; position: fixed; inset: 0; z-index: 2000; background: #000; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-        .end-slogan { font-size: clamp(1.2rem, 6vw, 2.2rem); color: var(--book-orange); text-shadow: 0 0 20px var(--book-orange); font-weight: bold; letter-spacing: 4px; line-height: 1.6; }
-        .fly-img { position: fixed; z-index: 999; object-fit: cover; transition: 0.8s; box-shadow: 0 0 25px var(--neon-cyan); }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Noto+Sans+TC:wght@300;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <div id="bg-canvas"></div>
+    <button id="theme-toggle" onclick="toggleTheme()">DIMENSION: DAY</button>
 
-    <!-- 首頁層 -->
     <div id="intro-layer">
-        <div class="slogan"><span id="type-text"></span><span id="cursor" class="cursor"></span></div>
-        <button id="start-btn" class="enter-btn" onclick="showRules()">INITIALIZE SYSTEM</button>
+        <!-- 蘋果圖樣：位於文字上方 -->
+        <img src="img/BG_apple.PNG" id="apple-logo" alt="Iridescent Apple">
+        
+        <div class="slogan">
+            <span id="type-text"></span><span id="cursor" class="cursor"></span>
+        </div>
+        
+        <button id="start-btn" class="enter-btn" onclick="showRules()">Initialize System</button>
     </div>
 
-    <!-- 規則說明 -->
+    <!-- 規則說明介面 -->
     <div id="rule-modal">
         <div class="rule-content">
-            <h2 class="rule-title">維度通訊玩具：已啟動</h2>
-            <p class="rule-text">
-                你在整理房間深處的舊紙箱時，翻出了一個造型奇特的收音玩具。<br><br>
-                雖然外殼佈滿灰塵，但撥動開關後，指示盤跳動起跨維度的頻率...似乎有什麼人正試圖透過雜訊傳遞影像。
-                <ul class="rule-list">
-                    <li>拖動<b>調頻拉桿</b>，在 88.0 - 108.0 之間尋找波長。</li>
-                    <li>接近目標時訊號會產生<b>視覺震動</b>。</li>
-                    <li>完全鎖定（SIGNAL LOCKED）後，即可攔截影像。</li>
-                </ul>
+            <h2 style="color:var(--book-orange); margin-bottom:20px;">維度通訊玩具：已啟動</h2>
+            <p style="color:#ccc; line-height:1.8; margin-bottom:30px;">
+                你在舊紙箱中發現了這顆虹彩蘋果，它似乎是某種跨維度的接收器...<br><br>
+                撥動下方頻率拉桿，當畫面產生視覺震動時，代表你正在接近通訊波長。
             </p>
-            <button class="enter-btn" style="display:block; width:100%; border-color: #fff; background: var(--book-orange); color:#000; font-weight:bold;" onclick="startGame()">開始同步訊號</button>
+            <button class="enter-btn" style="display:block; width:100%; background: var(--book-orange); color:#000;" onclick="startGame()">開始同步訊號</button>
         </div>
     </div>
 
-    <!-- 遊戲介面 -->
+    <!-- 遊戲收音機介面 -->
     <div id="radio-screen">
         <div class="cyber-chassis">
-            <div class="freq-display-area"><span id="freq-num">---.-</span></div>
-            <div class="viewport" id="viewport">
-                <img src="" id="main-img">
-                <div id="lock-msg" style="position:absolute; inset:0; display:none; justify-content:center; align-items:center; background:rgba(255,123,0,0.2); font-weight:bold; z-index:20; letter-spacing:3px;">SIGNAL LOCKED</div>
+            <div style="background:#000; padding:15px; text-align:center; margin-bottom:15px; border:1px solid #333;">
+                <span id="freq-num" style="font-family:monospace; font-size:2rem; color:var(--book-orange);">---.-</span>
             </div>
-            <div class="slider-wrap">
-                <div class="slider-rail"></div><div class="ticks"></div>
-                <input type="range" id="radio-slider" min="88.0" max="108.0" step="0.1" value="88.0">
+            <div id="viewport" style="width:100%; aspect-ratio:4/3; background:#000; position:relative; overflow:hidden; border:2px solid #111;">
+                <img src="" id="main-img" style="width:100%; height:100%; object-fit:cover; opacity:0; filter:blur(30px);">
+                <div id="lock-msg" style="position:absolute; inset:0; display:none; justify-content:center; align-items:center; background:rgba(255,123,0,0.2); font-weight:bold;">SIGNAL LOCKED</div>
             </div>
-            <div class="slots">
-                <div class="slot" id="slot-0"></div><div class="slot" id="slot-1"></div><div class="slot" id="slot-2"></div>
-                <div class="slot" id="slot-3"></div><div class="slot" id="slot-4"></div><div class="slot" id="slot-5"></div>
+            <input type="range" id="radio-slider" min="88.0" max="108.0" step="0.1" value="88.0" style="width:100%; margin-top:25px;">
+            <div class="slots" style="display:grid; grid-template-columns:repeat(6,1fr); gap:5px; margin-top:20px;">
+                <div class="slot" id="slot-0" style="aspect-ratio:1; background:#08080a; border:1px solid #333;"></div>
+                <div class="slot" id="slot-1" style="aspect-ratio:1; background:#08080a; border:1px solid #333;"></div>
+                <div class="slot" id="slot-2" style="aspect-ratio:1; background:#08080a; border:1px solid #333;"></div>
+                <div class="slot" id="slot-3" style="aspect-ratio:1; background:#08080a; border:1px solid #333;"></div>
+                <div class="slot" id="slot-4" style="aspect-ratio:1; background:#08080a; border:1px solid #333;"></div>
+                <div class="slot" id="slot-5" style="aspect-ratio:1; background:#08080a; border:1px solid #333;"></div>
             </div>
-            <div class="chassis-deco deco-bl" id="progress-text">MEMORY_RESTORE: 0%</div>
         </div>
     </div>
 
-    <!-- 結局書籍 -->
+    <!-- 結局書籍展示 -->
     <div id="final-reveal">
         <div class="book" id="book-container">
-            <div class="page" id="p0" style="z-index:20"><div class="page-side page-front cover-front" onclick="nextPage(0)"><h1 class="book-title">晝夜同頻企劃</h1><p style="margin-top:50px; color:rgba(255,255,255,0.4); font-size:0.6rem; font-family:Orbitron; letter-spacing:2px;">// DATA RECOVERY SUCCESS //</p></div><div class="page-side page-back" onclick="prevPage(0)"></div></div>
-            <div class="page" id="p1" style="z-index:19"><div class="page-side page-front" onclick="nextPage(1)"><div class="author-layout"><h2 style="border-bottom:2px solid #000; padding-bottom:12px; margin-bottom:15px; font-size:1.8rem;">《晝夜同頻》</h2><p style="font-weight:bold; letter-spacing:4px; font-size:1.1rem;">哥妹R18合本</p></div></div><div class="page-side page-back" onclick="prevPage(1)"></div></div>
-            <div class="page" id="p2" style="z-index:18"><div class="page-side page-front" onclick="nextPage(2)"><div style="margin:auto; text-align:left; width:85%;"><p style="font-weight:bold; border-left:4px solid #000; padding-left:12px; font-size:1.1rem;">漫畫作者：</p><p style="line-height:2; margin: 15px 0 25px; font-size:1rem; color:#333;">Eros艾諾斯 / 子葉 / 陌那<br>飯粒 / 蒼斐</p><p style="font-weight:bold; border-left:4px solid #000; padding-left:12px; font-size:1.1rem;">封面繪者：</p><p style="margin-top:15px; font-size:1rem; color:#333;">31棵棕櫚樹</p></div></div><div class="page-side page-back" onclick="prevPage(2)"></div></div>
+            <!-- 封面 -->
+            <div class="page" id="p0" style="z-index:20">
+                <div class="page-side page-front" style="background:var(--book-orange); color:#fff; justify-content:center; align-items:center; border-left:5px solid #441100;" onclick="nextPage(0)">
+                    <h1 style="text-align:center;">晝夜同頻企劃</h1>
+                    <p style="margin-top:20px; opacity:0.6;">// SUCCESS //</p>
+                </div>
+                <div class="page-side page-back" onclick="prevPage(0)"></div>
+            </div>
+            <!-- 作者頁 -->
             <div id="dynamic-pages"></div>
-            <div class="page" id="pLast" style="z-index:11"><div class="page-side page-front last-page-style"><div class="publish-date-tag">出版日期：2066/4/01</div><p class="final-msg">訊號連接成功，<br>但這日期...難不成...</p><button class="buy-btn" onclick="startFoolSequence()">預購連結</button></div><div class="page-side page-back" onclick="prevPage('Last')"></div></div>
+            <!-- 封底 -->
+            <div class="page" id="pLast" style="z-index:11">
+                <div class="page-side page-front" style="background:var(--book-orange-dark); color:#fff; justify-content:center; align-items:center;" onclick="startFoolSequence()">
+                    <h3>2066/4/01</h3>
+                    <p style="margin-top:20px;">點擊解鎖預購連結</p>
+                </div>
+                <div class="page-side page-back" onclick="prevPage('Last')"></div>
+            </div>
         </div>
     </div>
-
-    <!-- 打字機過場容器 -->
-    <div id="end-transition" style="display:none; position:fixed; inset:0; z-index:2000; background:#000; flex-direction:column; justify-content:center; align-items:center;">
-        <div class="end-slogan" id="end-type-text"></div>
-    </div>
-
-    <!-- 二段式結局彈窗 -->
-    <div id="fool-modal"><div class="fool-content">愚人節快樂！</div></div>
-
-    <div id="error-modal">
-        <div class="error-content">
-            <div class="error-title">CRITICAL ERROR: DIMENSIONAL_SHIFT</div>
-            <p class="error-text">
-                警告：偵測到時空坐標偏移。<br><br>
-                您所在的 2026 年尚未解鎖此通訊協議。請於『特定日期』再次嘗試連線。
-            </p>
-        </div>
-    </div>
-
-    <!-- 滿佈畫面的灰色文字 -->
-    <div id="glitch-bg"></div>
 
     <script>
         const authorConfig = [
-            { name: "Eros艾諾斯", img: "img/author4.png", fixed: false },
-            { name: "子葉", img: "img/author3.jpg", fixed: false },
-            { name: "陌那", img: "img/author6.png", fixed: false },
-            { name: "飯粒", img: "img/author2.png", fixed: false },
-            { name: "蒼斐", img: "img/author1.png", fixed: false },
+            { name: "Eros艾諾斯", img: "img/author4.png" },
+            { name: "子葉", img: "img/author3.jpg" },
+            { name: "陌那", img: "img/author6.png" },
+            { name: "飯粒", img: "img/author2.png" },
+            { name: "蒼斐", img: "img/author1.png" },
             { name: "31棵棕櫚樹", img: "img/author5.jpg", fixed: 1031 }
         ];
 
-        let targets = [];
+        let targets = [], found = new Set(), locked = false, isDayGlobal = true;
         const imgs = authorConfig.map(a => a.img);
-        let found = new Set(), freq, scanTimer, locked = false;
-        const zMap = { '0': 20, '1': 19, '2': 18, 'Auth0': 17, 'Auth1': 16, 'Auth2': 15, 'Auth3': 14, 'Auth4': 13, 'Auth5': 12, 'Last': 11 };
+        const zMap = { '0': 20, 'Auth0': 19, 'Auth1': 18, 'Auth2': 17, 'Auth3': 16, 'Auth4': 15, 'Auth5': 14, 'Last': 11 };
 
-        // --- 1. 初始化背景 (背景先行) ---
         (function init() {
             const h = new Date().getHours();
-            const isDay = h >= 6 && h < 18;
-            document.documentElement.style.setProperty('--bg-dynamic', isDay ? '#000' : '#fff');
-            document.documentElement.style.setProperty('--text-dynamic', isDay ? '#fff' : '#000');
-
+            isDayGlobal = h >= 6 && h < 18;
             window.addEventListener('DOMContentLoaded', () => {
-                const canvas = document.getElementById('bg-canvas');
-                for(let i=0; i<50; i++) {
-                    const el = document.createElement('div');
-                    el.className = isDay ? 'star' : 'cloud';
-                    let x, y;
-                    do { x = Math.random() * 92; } while (x > 30 && x < 62);
-                    do { y = Math.random() * 92; } while (y > 35 && y < 65);
-                    el.style.left = x + 'vw'; el.style.top = y + 'vh';
-                    if(isDay) {
-                        const s = Math.random()*3+'px'; el.style.width = el.style.height = s;
-                        el.style.setProperty('--d', Math.random()*3+2+'s');
-                    } else {
-                        el.style.width = Math.random()*220+140+'px'; el.style.height = '120px';
-                    }
-                    canvas.appendChild(el);
-                }
-                setTimeout(() => { canvas.style.opacity = "1"; }, 100);
-                setTimeout(() => {
-                    startTypewriter("type-text", "同頻訊號攔截…", () => {
-                        setTimeout(() => {
-                            document.getElementById('type-text').innerHTML = "訊號已攔截成功。";
-                            document.getElementById('cursor').style.display = "none";
-                            document.getElementById('start-btn').style.display = "block";
-                        }, 1000);
-                    });
-                }, 800);
+                applyTheme(isDayGlobal);
+                startTypewriter("type-text", "同頻訊號攔截中…", () => {
+                    setTimeout(() => {
+                        document.getElementById('type-text').innerHTML = "訊號已攔截成功。";
+                        document.getElementById('cursor').style.display = "none";
+                        document.getElementById('start-btn').style.display = "block";
+                    }, 1000);
+                });
                 generateFrequencies();
                 setupDynamicPages();
             });
         })();
 
-        // --- 2. 遊戲控制 ---
+        function applyTheme(isDay) {
+            isDayGlobal = isDay;
+            document.documentElement.style.setProperty('--bg-dynamic', isDay ? '#000' : '#fff');
+            document.documentElement.style.setProperty('--text-dynamic', isDay ? '#fff' : '#000');
+            document.getElementById('theme-toggle').innerText = `DIMENSION: ${isDay ? 'DAY' : 'NIGHT'}`;
+            
+            const apple = document.getElementById('apple-logo');
+            if(isDay) {
+                apple.style.filter = "drop-shadow(0 0 20px rgba(255,255,255,0.1))";
+            } else {
+                apple.style.filter = "brightness(0.8) contrast(1.1) drop-shadow(0 0 20px rgba(0,0,0,0.1))";
+            }
+        }
+
+        function toggleTheme() { applyTheme(!isDayGlobal); }
+
         function showRules() {
             document.getElementById('intro-layer').style.opacity = '0';
             setTimeout(() => {
                 document.getElementById('intro-layer').style.display = 'none';
-                const modal = document.getElementById('rule-modal');
-                modal.style.display = 'flex';
-                setTimeout(() => modal.style.opacity = '1', 50);
+                document.getElementById('rule-modal').style.display = 'flex';
             }, 800);
         }
 
         function startGame() {
-            document.getElementById('rule-modal').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('rule-modal').style.display = 'none';
-                document.getElementById('radio-screen').style.display = 'flex';
-                document.body.style.backgroundColor = "#050507";
-                document.getElementById('bg-canvas').style.display = "none"; 
-                freq = (Math.random() * (108 - 88) + 88).toFixed(1);
-                document.getElementById('radio-slider').value = freq;
-                updateUI(freq);
-            }, 800);
+            document.getElementById('rule-modal').style.display = 'none';
+            document.getElementById('radio-screen').style.display = 'flex';
+            document.body.style.backgroundColor = "#050507";
+            const freq = (Math.random() * (108 - 88) + 88).toFixed(1);
+            document.getElementById('radio-slider').value = freq;
+            updateUI(freq);
         }
 
-        document.getElementById('radio-slider').addEventListener('input', (e) => {
-            if(!locked) updateUI(e.target.value);
-        });
+        document.getElementById('radio-slider').addEventListener('input', (e) => { if(!locked) updateUI(e.target.value); });
 
         function updateUI(val) {
             const fNum = parseFloat(val);
-            const display = document.getElementById('freq-num');
-            display.innerText = fNum.toFixed(1).padStart(5, '0');
+            document.getElementById('freq-num').innerText = fNum.toFixed(1).padStart(5, '0');
             let minDist = 1000, idx = -1;
             targets.forEach((t, i) => { let d = Math.abs(fNum * 10 - t); if(d < minDist) { minDist = d; idx = i; } });
-            if (minDist < 4) display.classList.add('jitter'); else display.classList.remove('jitter');
             const img = document.getElementById('main-img');
             if(minDist < 12) {
                 img.src = imgs[idx]; img.style.opacity = (1 - minDist/12);
@@ -298,89 +261,24 @@
             const mainImg = document.getElementById('main-img');
             mainImg.style.filter = "blur(0px)"; mainImg.style.opacity = "1";
             document.getElementById('lock-msg').style.display = "flex";
-            const progress = Math.round((found.size / 6) * 100);
-            document.getElementById('progress-text').innerText = `MEMORY_RESTORE: ${progress}%`;
             setTimeout(() => {
                 document.getElementById('lock-msg').style.display = "none";
-                const v = document.getElementById('viewport').getBoundingClientRect();
-                const s = document.getElementById(`slot-${idx}`).getBoundingClientRect();
-                const fly = document.createElement('img');
-                fly.src = imgs[idx]; fly.className = 'fly-img';
-                fly.style.cssText = `width:${v.width}px; height:${v.height}px; top:${v.top}px; left:${v.left}px; position:fixed; z-index:999; transition: 0.8s;`;
-                document.body.appendChild(fly);
-                setTimeout(() => {
-                    fly.style.width = s.width+'px'; fly.style.height = s.height+'px';
-                    fly.style.top = s.top+'px'; fly.style.left = s.left+'px'; fly.style.opacity = '0.5';
-                    setTimeout(() => {
-                        document.getElementById(`slot-${idx}`).classList.add('active');
-                        document.getElementById(`slot-${idx}`).innerHTML = `<img src="${imgs[idx]}" style="width:100%;height:100%;object-fit:cover;">`;
-                        fly.remove(); locked = false;
-                        if(found.size === 6) triggerEnd();
-                    }, 800);
-                }, 50);
-            }, 1500);
+                document.getElementById(`slot-${idx}`).innerHTML = `<img src="${imgs[idx]}" style="width:100%;height:100%;object-fit:cover;">`;
+                locked = false;
+                if(found.size === 6) triggerEnd();
+            }, 1200);
         }
 
-        // --- 3. 結局驚喜序列 ---
-        function startFoolSequence() {
-            // 1. 顯示愚人節快樂
-            document.getElementById('fool-modal').style.display = 'flex';
-            
-            // 2. 停頓 2 秒
-            setTimeout(() => {
-                // 3. 顯示報錯視窗 (覆蓋)
-                document.getElementById('error-modal').style.display = 'flex';
-                
-                // 4. 啟動灰色雜訊背景
-                startGlitchText();
-            }, 2000);
-        }
-
-        function startGlitchText() {
-            const container = document.getElementById('glitch-bg');
-            container.style.display = 'block';
-            const phrases = [
-                "NICE 2026", 
-                "戀與深空", 
-                "主題街道", 
-                "《晝夜同頻》", 
-                "R18合本企劃使動", 
-                "FirstTime"
-            ];
-            
-            setInterval(() => {
-                const el = document.createElement('div');
-                el.className = 'glitch-text-unit';
-                el.innerText = phrases[Math.floor(Math.random() * phrases.length)];
-                el.style.left = Math.random() * 100 + 'vw';
-                el.style.top = Math.random() * 100 + 'vh';
-                el.style.fontSize = (Math.random() * 30 + 12) + 'px';
-                el.style.transform = `rotate(${Math.random() * 360}deg)`;
-                el.style.opacity = (Math.random() * 0.7 + 0.3);
-                container.appendChild(el);
-                
-                if(container.children.length > 200) {
-                    container.removeChild(container.firstChild);
-                }
-            }, 70);
-        }
-
-        // --- 翻頁與數據生成 ---
         function triggerEnd() {
             setTimeout(() => {
-                document.getElementById('radio-screen').style.opacity = '0';
-                setTimeout(() => {
-                    document.getElementById('radio-screen').style.display = 'none';
-                    const trans = document.getElementById('end-transition'); trans.style.display = 'flex';
-                    startTypewriter("end-type-text", "您已連接到訊號...\n晝夜同頻企劃即將啟動...", () => {
-                        setTimeout(() => { trans.style.opacity = '0'; setTimeout(() => {
-                                trans.style.display = 'none';
-                                const reveal = document.getElementById('final-reveal');
-                                reveal.style.display = 'flex'; setTimeout(() => reveal.style.opacity = '1', 50);
-                        }, 800); }, 1500);
-                    });
-                }, 800);
+                document.getElementById('radio-screen').style.display = 'none';
+                document.getElementById('final-reveal').style.display = 'flex';
+                setTimeout(() => document.getElementById('final-reveal').style.opacity = '1', 50);
             }, 1000);
+        }
+
+        function startFoolSequence() {
+            alert("愚人節快樂！本訊號來自 2066 年，當前時空尚未解鎖預購。");
         }
 
         function setupDynamicPages() {
@@ -388,32 +286,40 @@
             authorConfig.forEach((auth, i) => {
                 const page = document.createElement('div');
                 page.className = 'page'; page.id = `pAuth${i}`; page.style.zIndex = zMap[`Auth${i}`];
-                page.innerHTML = `<div class="page-side page-front" onclick="nextPage('Auth${i}')"><div class="author-layout"><div class="author-img-box"><img src="${auth.img}"></div><div class="author-name-box">${auth.name}</div></div></div><div class="page-side page-back" onclick="prevPage('Auth${i}')"></div>`;
+                page.innerHTML = `
+                    <div class="page-side page-front" onclick="nextPage('Auth${i}')">
+                        <div style="margin:auto; text-align:center;">
+                            <div style="width:120px; height:160px; background:#eee; margin:0 auto 15px; border:1px solid #ccc; overflow:hidden;">
+                                <img src="${auth.img}" style="width:100%; height:100%; object-fit:cover;">
+                            </div>
+                            <h3 style="font-family:Noto Sans TC;">${auth.name}</h3>
+                        </div>
+                    </div>
+                    <div class="page-side page-back" onclick="prevPage('Auth${i}')"></div>`;
                 container.appendChild(page);
             });
         }
 
         function generateFrequencies() {
-            targets = new Array(authorConfig.length);
+            targets = [];
             authorConfig.forEach((auth, i) => {
-                if (auth.fixed) targets[i] = auth.fixed;
-                else {
-                    let r;
-                    do { r = Math.floor(Math.random() * (1080 - 880 + 1) + 880); } 
-                    while (targets.includes(r) || Math.abs(r - 1031) < 15);
-                    targets[i] = r;
-                }
+                let r; do { r = Math.floor(Math.random() * (1080 - 880 + 1) + 880); } while (targets.includes(r));
+                targets[i] = r;
             });
         }
 
         function startTypewriter(id, text, cb) {
             let i = 0, el = document.getElementById(id);
-            el.innerHTML = "";
             const t = setInterval(() => { el.innerHTML += text[i++]; if(i >= text.length) { clearInterval(t); if(cb) cb(); } }, 120);
         }
 
-        function nextPage(id) { const p = document.getElementById('p'+id); p.classList.add('flipped'); setTimeout(() => { p.style.zIndex = 1; }, 500); }
-        function prevPage(id) { const p = document.getElementById('p'+id); p.style.zIndex = zMap[id]; p.classList.remove('flipped'); }
+        function nextPage(id) { const p = document.getElementById('p'+id); p.classList.add('flipped'); setTimeout(() => p.style.zIndex = 1, 500); }
+        function prevPage(id) { 
+            const p = document.getElementById('p'+id); 
+            const realId = id.includes('Auth') ? id : id;
+            p.style.zIndex = zMap[id]; 
+            p.classList.remove('flipped'); 
+        }
     </script>
 </body>
 </html>
